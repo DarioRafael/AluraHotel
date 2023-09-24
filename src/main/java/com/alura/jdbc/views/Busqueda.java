@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import com.alura.jdbc.dao.HuespedesDao;
+import com.alura.jdbc.dao.ReservasDao;
 import com.alura.jdbc.factory.ConnectionFactory;
 import com.alura.jdbc.models.Huespedes;
 import com.alura.jdbc.models.Reservas;
@@ -232,18 +233,30 @@ public class Busqueda extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				ConnectionFactory connectionFactory = new ConnectionFactory();
+
 				HuespedesDao huespedesDao = new HuespedesDao(connectionFactory.recuperaConexion());
+				ReservasDao reservasDao = new ReservasDao(connectionFactory.recuperaConexion());
+
 				String apellidoABuscar = txtBuscar.getText().trim();
 				String numeroReservaBuscar = txtBuscar.getText().trim();
 
+				// Huespedes
 				if (!apellidoABuscar.isEmpty()) {
 					List<Huespedes> resultados = huespedesDao.buscarPorApellido(apellidoABuscar);
 					actualizarTablaHuespedes(resultados);
-				} 
+				}
 				if (numeroReservaBuscar.matches("\\d+")) {
-				    int numeroReserva = Integer.parseInt(numeroReservaBuscar);
-				    List<Huespedes> resultados = huespedesDao.buscarPorNumeroReserva(numeroReserva);
-				    actualizarTablaHuespedes(resultados);
+					int numeroReserva = Integer.parseInt(numeroReservaBuscar);
+					List<Huespedes> resultados = huespedesDao.buscarPorNumeroReserva(numeroReserva);
+					actualizarTablaHuespedes(resultados);
+				}
+
+				// Reservas
+
+				if (numeroReservaBuscar.matches("\\d+")) {
+					int numeroReserva = Integer.parseInt(numeroReservaBuscar);
+					List<Reservas> resultados = reservasDao.buscarPorNumeroReserva(numeroReserva);
+					actualizarTablaReservas(resultados);
 				}
 
 			}
@@ -350,6 +363,15 @@ public class Busqueda extends JFrame {
 			modeloHuesped.addRow(
 					new Object[] { huesped.getId(), huesped.getNombre(), huesped.getApellido(), huesped.getFechaNac(),
 							huesped.getNacionalidad(), huesped.getTelefono(), huesped.getNumeroReserva() });
+		}
+	}
+
+	private void actualizarTablaReservas(List<Reservas> reservas) {
+		modelo.setRowCount(0);
+
+		for (Reservas reserva : reservas) {
+			modelo.addRow(new Object[] { reserva.getNumeroDeReserva(), reserva.getFechaCheckIn(),
+					reserva.getFechaCheckOut(), reserva.getValor(), reserva.getFormaDePago() });
 		}
 	}
 

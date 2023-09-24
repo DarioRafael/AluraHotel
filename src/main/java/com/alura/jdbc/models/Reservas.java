@@ -4,7 +4,7 @@ import java.sql.Date;
 
 public class Reservas {
 
-	private String numeroDeReserva;
+	private Integer numeroDeReserva;
 	private Date fechaCheckIn;
 	private Date fechaCheckOut;
 	private String valor;
@@ -14,7 +14,7 @@ public class Reservas {
 	
 
 
-	public Reservas(String numeroDeReserva, Date fechaCheckIn, Date fechaCheckOut, String valor, String formaDePago) {
+	public Reservas(Integer numeroDeReserva, Date fechaCheckIn, Date fechaCheckOut, String valor, String formaDePago) {
 		this.numeroDeReserva = numeroDeReserva;
 		this.fechaCheckIn = fechaCheckIn;
 		this.fechaCheckOut = fechaCheckOut;
@@ -23,12 +23,12 @@ public class Reservas {
 	}
 
 
-	public String getNumeroDeReserva() {
+	public Integer getNumeroDeReserva() {
 		return numeroDeReserva;
 	}
 
 
-	public void setNumeroDeReserva(String NumeroDeReserva) {
+	public void setNumeroDeReserva(Integer NumeroDeReserva) {
 		this.numeroDeReserva = numeroDeReserva;
 	}
 
