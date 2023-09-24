@@ -20,6 +20,8 @@ import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.SystemColor;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -33,9 +35,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 @SuppressWarnings("serial")
 public class Busqueda extends JFrame {
@@ -228,6 +233,7 @@ public class Busqueda extends JFrame {
 		separator_1_2.setBounds(539, 159, 193, 2);
 		contentPane.add(separator_1_2);
 
+		// BUSCAR
 		JPanel btnbuscar = new JPanel();
 		btnbuscar.addMouseListener(new MouseAdapter() {
 			@Override
@@ -274,7 +280,17 @@ public class Busqueda extends JFrame {
 		lblBuscar.setForeground(Color.WHITE);
 		lblBuscar.setFont(new Font("Roboto", Font.PLAIN, 18));
 
+		// EDITAR
 		JPanel btnEditar = new JPanel();
+		btnEditar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				ConnectionFactory connectionFactory = new ConnectionFactory();
+
+				guardarCambiosHuespedes();
+
+			}
+		});
 		btnEditar.setLayout(null);
 		btnEditar.setBackground(new Color(12, 138, 199));
 		btnEditar.setBounds(635, 508, 122, 35);
@@ -374,5 +390,56 @@ public class Busqueda extends JFrame {
 					reserva.getFechaCheckOut(), reserva.getValor(), reserva.getFormaDePago() });
 		}
 	}
+
+	// ...
+	private void guardarCambiosHuespedes() {
+	    int numRows = modeloHuesped.getRowCount();
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+	    for (int row = 0; row < numRows; row++) {
+	        int idHuesped = (int) modeloHuesped.getValueAt(row, 0);
+	        String nombre = (String) modeloHuesped.getValueAt(row, 1);
+	        String apellido = (String) modeloHuesped.getValueAt(row, 2);
+	        String fechaNacimientoStr = (String) modeloHuesped.getValueAt(row, 3); 
+	        String nacionalidad = (String) modeloHuesped.getValueAt(row, 4);
+	        String telefono = (String) modeloHuesped.getValueAt(row, 5);
+	        int idReserva = (int) modeloHuesped.getValueAt(row, 6);
+
+	        java.sql.Date fechaNacimiento = null;
+
+	        if (!fechaNacimientoStr.isEmpty()) {
+	            try {
+	                java.util.Date utilDate = sdf.parse(fechaNacimientoStr);
+	                fechaNacimiento = new java.sql.Date(utilDate.getTime());
+	            } catch (ParseException e) {
+	                e.printStackTrace();
+	            }
+	        }
+
+	        ConnectionFactory connectionFactory = new ConnectionFactory();
+	        try (Connection connection = connectionFactory.recuperaConexion();
+	                PreparedStatement statement = connection
+	                        .prepareStatement("UPDATE huespedes SET Nombre = ?, Apellido = ?, `Fecha de Nacimiento` = ?, "
+	                                + "Nacionalidad = ?, Telefono = ?, `Id Reserva` = ? WHERE id = ?")) {
+	            statement.setString(1, nombre);
+	            statement.setString(2, apellido);
+	            statement.setDate(3, fechaNacimiento);
+	            statement.setString(4, nacionalidad);
+	            statement.setString(5, telefono);
+	            statement.setInt(6, idReserva);
+	            statement.setInt(7, idHuesped);
+
+	            int rowsUpdated = statement.executeUpdate();
+
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
+
+	    JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+
 
 }
