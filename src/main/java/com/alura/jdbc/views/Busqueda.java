@@ -54,6 +54,7 @@ public class Busqueda extends JFrame {
 	private JLabel labelAtras;
 	private JLabel labelExit;
 	int xMouse, yMouse;
+	private ConnectionFactory connectionFactory;
 
 	/**
 	 * Launch the application.
@@ -76,6 +77,7 @@ public class Busqueda extends JFrame {
 	 */
 	public Busqueda() {
 
+		connectionFactory = new ConnectionFactory();
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Busqueda.class.getResource("/imagenes/lupa2.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 910, 571);
@@ -286,8 +288,12 @@ public class Busqueda extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				ConnectionFactory connectionFactory = new ConnectionFactory();
+				boolean usarGuardarCambiosHuespedes = true; // Cambia esto según tu lógica
 
-				guardarCambiosHuespedes();
+				if (usarGuardarCambiosHuespedes)
+					guardarCambiosHuespedes();
+				else
+					guardarCambiosModelo();
 
 			}
 		});
@@ -305,6 +311,36 @@ public class Busqueda extends JFrame {
 		btnEditar.add(lblEditar);
 
 		JPanel btnEliminar = new JPanel();
+		btnEliminar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+					int filaSeleccionadaHuespedes = tbHuespedes.getSelectedRow();
+	
+			        if (filaSeleccionadaHuespedes != -1) {
+			            int idHuesped = (int) modeloHuesped.getValueAt(filaSeleccionadaHuespedes, 0);
+			            int numeroReserva = (int) modeloHuesped.getValueAt(filaSeleccionadaHuespedes, 6);
+	
+			            // Busca la fila en el modelo de reservas
+			            for (int i = 0; i < modelo.getRowCount(); i++) {
+			                int numeroReservaEnModelo = (int) modelo.getValueAt(i, 0);
+			                if (numeroReservaEnModelo == numeroReserva) {
+			                    // Elimina la reserva correspondiente
+			                    modelo.removeRow(i);
+			                    break; // Termina el bucle una vez que se encuentra la reserva
+			                }
+			            }
+	
+			            // Elimina el huésped seleccionado en el modelo de huéspedes
+			            modeloHuesped.removeRow(filaSeleccionadaHuespedes);
+			            eliminarHuesped(idHuesped);
+			        } else {
+			            JOptionPane.showMessageDialog(null, "Selecciona un huésped para eliminar.", "Advertencia",
+			                    JOptionPane.WARNING_MESSAGE);
+			        }
+
+			}
+		});
 		btnEliminar.setLayout(null);
 		btnEliminar.setBackground(new Color(12, 138, 199));
 		btnEliminar.setBounds(767, 508, 122, 35);
@@ -334,8 +370,6 @@ public class Busqueda extends JFrame {
 
 	public void cargarDatosReservas() {
 
-		ConnectionFactory connectionFactory = new ConnectionFactory();
-
 		modelo.setRowCount(0);
 		try (Connection connection = connectionFactory.recuperaConexion();
 				PreparedStatement statement = connection.prepareStatement("SELECT * FROM reservas");
@@ -348,12 +382,11 @@ public class Busqueda extends JFrame {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			// Manejo de errores
+
 		}
 	}
 
 	public void cargarDatosHuespedes() {
-		ConnectionFactory connectionFactory = new ConnectionFactory();
 
 		modeloHuesped.setRowCount(0);
 		try (Connection connection = connectionFactory.recuperaConexion();
@@ -368,7 +401,7 @@ public class Busqueda extends JFrame {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			// Manejo de errores
+
 		}
 	}
 
@@ -391,55 +424,168 @@ public class Busqueda extends JFrame {
 		}
 	}
 
-	// ...
 	private void guardarCambiosHuespedes() {
-	    int numRows = modeloHuesped.getRowCount();
-	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		int numRows = modeloHuesped.getRowCount();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-	    for (int row = 0; row < numRows; row++) {
-	        int idHuesped = (int) modeloHuesped.getValueAt(row, 0);
-	        String nombre = (String) modeloHuesped.getValueAt(row, 1);
-	        String apellido = (String) modeloHuesped.getValueAt(row, 2);
-	        String fechaNacimientoStr = (String) modeloHuesped.getValueAt(row, 3); 
-	        String nacionalidad = (String) modeloHuesped.getValueAt(row, 4);
-	        String telefono = (String) modeloHuesped.getValueAt(row, 5);
-	        int idReserva = (int) modeloHuesped.getValueAt(row, 6);
+		for (int row = 0; row < numRows; row++) {
+			int idHuesped = (int) modeloHuesped.getValueAt(row, 0);
+			String nombre = (String) modeloHuesped.getValueAt(row, 1);
+			String apellido = (String) modeloHuesped.getValueAt(row, 2);
+			java.sql.Date fechaNacimiento = (java.sql.Date) modeloHuesped.getValueAt(row, 3);
+			String nacionalidad = (String) modeloHuesped.getValueAt(row, 4);
+			String telefono = (String) modeloHuesped.getValueAt(row, 5);
+			int idReserva = (int) modeloHuesped.getValueAt(row, 6);
 
-	        java.sql.Date fechaNacimiento = null;
+			try (Connection connection = connectionFactory.recuperaConexion();
+					PreparedStatement statement = connection.prepareStatement(
+							"UPDATE huespedes SET Nombre = ?, Apellido = ?, `Fecha de Nacimiento` = ?, "
+									+ "Nacionalidad = ?, Telefono = ?, `Id Reserva` = ? WHERE id = ?")) {
 
-	        if (!fechaNacimientoStr.isEmpty()) {
-	            try {
-	                java.util.Date utilDate = sdf.parse(fechaNacimientoStr);
-	                fechaNacimiento = new java.sql.Date(utilDate.getTime());
-	            } catch (ParseException e) {
-	                e.printStackTrace();
-	            }
-	        }
+				statement.setString(1, nombre);
+				statement.setString(2, apellido);
+				statement.setDate(3, fechaNacimiento);
+				statement.setString(4, nacionalidad);
+				statement.setString(5, telefono);
+				statement.setInt(6, idReserva);
+				statement.setInt(7, idHuesped);
 
-	        ConnectionFactory connectionFactory = new ConnectionFactory();
-	        try (Connection connection = connectionFactory.recuperaConexion();
-	                PreparedStatement statement = connection
-	                        .prepareStatement("UPDATE huespedes SET Nombre = ?, Apellido = ?, `Fecha de Nacimiento` = ?, "
-	                                + "Nacionalidad = ?, Telefono = ?, `Id Reserva` = ? WHERE id = ?")) {
-	            statement.setString(1, nombre);
-	            statement.setString(2, apellido);
-	            statement.setDate(3, fechaNacimiento);
-	            statement.setString(4, nacionalidad);
-	            statement.setString(5, telefono);
-	            statement.setInt(6, idReserva);
-	            statement.setInt(7, idHuesped);
+				int rowsUpdated = statement.executeUpdate();
 
-	            int rowsUpdated = statement.executeUpdate();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 
-
-	        } catch (SQLException e) {
-	            e.printStackTrace();
-	        }
-	    }
-
-	    JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, "Cambios guardados con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	private void guardarCambiosModelo() {
 
+		int numRows = modelo.getRowCount();
+
+		try (Connection connection = connectionFactory.recuperaConexion()) {
+			// Elimina esta línea, ya que no necesitas deshabilitar el autocommit
+			// connection.setAutoCommit(false);
+
+			try (PreparedStatement statement = connection.prepareStatement(
+					"UPDATE reservas SET `fecha check in` = ?, `fecha check out` = ?, valor = ?, `forma de pago` = ? WHERE `numero de reserva` = ? AND `fecha check in` = ?")) {
+				for (int row = 0; row < numRows; row++) {
+					// Configura los valores en el PreparedStatement
+					// statement.setInt(5, numeroReserva);
+					// statement.setDate(6, fechaCheckIn);
+
+					statement.addBatch();
+				}
+
+				int[] rowsUpdated = statement.executeBatch();
+				// Como no se deshabilitó el autocommit, no es necesario llamar a
+				// connection.commit() aquí.
+
+				// Maneja el resultado de la actualización
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+				// Maneja la excepción
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			// Maneja la excepción
+		}
+	}
+
+	public void eliminarReserva(int numeroReserva) {
+
+		try (Connection connection = connectionFactory.recuperaConexion();
+				PreparedStatement statement = connection
+						.prepareStatement("DELETE FROM reservas WHERE `numero de reserva` = ?")) {
+			statement.setInt(1, numeroReserva);
+
+			int rowsDeleted = statement.executeUpdate();
+
+			if (rowsDeleted > 0) {
+				System.out.println("Fila eliminada con éxito.");
+			} else {
+				System.out.println("No se encontró la fila a eliminar.");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Error al eliminar la fila.");
+		}
+	}
+
+	private void eliminarHuesped(int idHuesped) {
+    Connection connection = null;
+    PreparedStatement deleteHuespedStatement = null;
+    PreparedStatement deleteReservaStatement = null;
+
+    try {
+        connection = connectionFactory.recuperaConexion();
+        connection.setAutoCommit(false); // Deshabilitamos el autocommit para realizar ambas eliminaciones como una transacción
+
+        // Eliminar el huésped
+        deleteHuespedStatement = connection.prepareStatement("DELETE FROM huespedes WHERE Id = ?");
+        deleteHuespedStatement.setInt(1, idHuesped);
+        int rowsDeletedHuesped = deleteHuespedStatement.executeUpdate();
+
+        // Buscar el número de reserva asociado al huésped
+        int numeroReserva = -1;
+        if (rowsDeletedHuesped > 0) {
+            String queryNumeroReserva = "SELECT `Id Reserva` FROM huespedes WHERE Id = ?";
+            PreparedStatement findReservaStatement = connection.prepareStatement(queryNumeroReserva);
+            findReservaStatement.setInt(1, idHuesped);
+            ResultSet resultSet = findReservaStatement.executeQuery();
+            if (resultSet.next()) {
+                numeroReserva = resultSet.getInt("Id Reserva");
+            }
+        }
+
+        // Eliminar la reserva asociada (si se encontró)
+        if (numeroReserva != -1) {
+            deleteReservaStatement = connection.prepareStatement("DELETE FROM reservas WHERE `numero de reserva` = ?");
+            deleteReservaStatement.setInt(1, numeroReserva);
+            int rowsDeletedReserva = deleteReservaStatement.executeUpdate();
+
+            if (rowsDeletedReserva > 0) {
+                System.out.println("Reserva eliminada con éxito.");
+            } else {
+                System.out.println("No se encontró la reserva a eliminar.");
+            }
+        }
+
+        // Confirmar la transacción
+        connection.commit();
+        JOptionPane.showMessageDialog(null, "Huésped y reserva eliminados con éxito.", "Éxito",
+                JOptionPane.INFORMATION_MESSAGE);
+    } catch (SQLException e) {
+        // En caso de error, realizar un rollback para deshacer cualquier cambio en la base de datos
+        try {
+            if (connection != null) {
+                connection.rollback();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Error al eliminar el huésped y la reserva.", "Error",
+                JOptionPane.ERROR_MESSAGE);
+    } finally {
+        try {
+            if (deleteHuespedStatement != null) {
+                deleteHuespedStatement.close();
+            }
+            if (deleteReservaStatement != null) {
+                deleteReservaStatement.close();
+            }
+            if (connection != null) {
+                connection.setAutoCommit(true); // Reestablecemos el autocommit
+                connection.close();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+}
 
 }
