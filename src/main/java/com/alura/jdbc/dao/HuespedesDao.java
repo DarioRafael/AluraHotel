@@ -5,6 +5,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.alura.jdbc.models.Huespedes;
 import com.alura.jdbc.models.Usuario;
@@ -35,4 +37,63 @@ public class HuespedesDao {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+	
+	public List<Huespedes> buscarPorApellido(String apellido) {
+	    List<Huespedes> resultados = new ArrayList<>();
+	    try {
+	        String sql = "SELECT * FROM huespedes WHERE apellido = ?";
+	        PreparedStatement statement = connection.prepareStatement(sql);
+	        statement.setString(1, apellido);
+	        ResultSet resultSet = statement.executeQuery();
+	        while (resultSet.next()) {
+
+	            Huespedes huesped = new Huespedes(
+	            	resultSet.getInt("Id"),
+	                resultSet.getString("Nombre"),
+	                resultSet.getString("Apellido"),
+	                resultSet.getDate("Fecha de Nacimiento"),
+	                resultSet.getString("Nacionalidad"),
+	                resultSet.getString("Telefono"),
+	                resultSet.getInt("Id Reserva")
+	            );
+	            resultados.add(huesped);
+	        }
+	    } catch (SQLException e) {
+	        throw new RuntimeException(e);
+	    }
+	    return resultados;
+	}
+	
+	public List<Huespedes> buscarPorNumeroReserva(int numeroReserva) {
+	    List<Huespedes> resultados = new ArrayList<>();
+	    try {
+	        String sql = "SELECT * FROM huespedes WHERE `Id Reserva` = ?";
+	        PreparedStatement statement = connection.prepareStatement(sql);
+	        statement.setInt(1, numeroReserva);
+
+	        
+	        ResultSet resultSet = statement.executeQuery();
+	        while (resultSet.next()) {
+	            Huespedes huesped = new Huespedes(
+	                resultSet.getInt("Id"),
+	                resultSet.getString("Nombre"),
+	                resultSet.getString("Apellido"),
+	                resultSet.getDate("Fecha de Nacimiento"),
+	                resultSet.getString("Nacionalidad"),
+	                resultSet.getString("Telefono"),
+	                resultSet.getInt("Id Reserva")
+	            );
+	            resultados.add(huesped);
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error SQL: " + e.getMessage());
+	        throw new RuntimeException(e);
+	    }
+	    return resultados;
+	}
+
+
+
 }

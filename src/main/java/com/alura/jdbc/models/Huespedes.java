@@ -10,13 +10,13 @@ public class Huespedes {
 	private Date fechaNac;
 	private String nacionalidad;
 	private String telefono;
-	private String numeroReserva;
+	private Integer numeroReserva;
 	
 	
 	
-	public Huespedes( String nombre, String apellido, Date fechaNac, String nacionalidad, String telefono,
-			String numeroReserva) {
-		
+	public Huespedes(Integer id,String nombre, String apellido, Date fechaNac, String nacionalidad, String telefono,
+			Integer numeroReserva) {
+		this.id = id;
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.fechaNac = fechaNac;
@@ -99,13 +99,13 @@ public class Huespedes {
 
 
 
-	public String getNumeroReserva() {
+	public Integer getNumeroReserva() {
 		return numeroReserva;
 	}
 
 
 
-	public void setNumeroReserva(String numeroReserva) {
+	public void setNumeroReserva(Integer numeroReserva) {
 		this.numeroReserva = numeroReserva;
 	}
 	
