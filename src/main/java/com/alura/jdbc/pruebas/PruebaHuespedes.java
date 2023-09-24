@@ -24,7 +24,7 @@ public class PruebaHuespedes {
 			Date fechaNac = Date.valueOf("1990-01-15");
 			String nacionalidad = "Mexicano";
 			String telefono = "555-123-4567";
-			String numeroReserva = "12345";
+			Integer numeroReserva = 12345;
 
 			huespedesDao.insertarHuesped(nombre, apellido, fechaNac, nacionalidad, telefono, numeroReserva);
 

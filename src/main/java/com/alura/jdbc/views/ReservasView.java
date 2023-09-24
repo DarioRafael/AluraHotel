@@ -41,7 +41,7 @@ public class ReservasView extends JFrame {
 	int xMouse, yMouse;
 	private JLabel labelExit;
 	private JLabel labelAtras;
-    public String numeroReserva;
+    public Integer numeroReserva;
 
 
 	/**
@@ -301,7 +301,7 @@ public class ReservasView extends JFrame {
 						}
 						txtValor.setText("$" + valorReserva);
 						
-						
+					
 						
 
 					}
@@ -367,7 +367,7 @@ public class ReservasView extends JFrame {
 		this.setLocation(x - xMouse, y - yMouse);
 	}
 	
-	public void setNumeroReserva(String numeroReserva) {
+	public void setNumeroReserva(Integer numeroReserva) {
         this.numeroReserva = numeroReserva;
     }
 
@@ -377,7 +377,7 @@ public class ReservasView extends JFrame {
 
 		ReservasDao reservasDao = new ReservasDao(connectionFactory.recuperaConexion());
 		
-		String numeroReserva = this.numeroReserva;
+		Integer numeroReserva = this.numeroReserva;
 		java.util.Date utilFechaEntrada = txtFechaEntrada.getDate();
 		java.sql.Date fechaEntrada = new java.sql.Date(utilFechaEntrada.getTime());
 

@@ -19,7 +19,7 @@ public class HuespedesDao {
 	}
 
 	public void insertarHuesped(String nombre, String apellido, Date fechaNac, String nacionalidad, String telefono,
-			String numeroReserva) {
+			Integer numeroReserva) {
 		try {
 			String sql = "INSERT INTO huespedes (nombre, apellido, `Fecha de Nacimiento`, nacionalidad, telefono, `Id Reserva`) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -30,7 +30,7 @@ public class HuespedesDao {
 			statement.setDate(3, new java.sql.Date(fechaNac.getTime()));
 			statement.setString(4, nacionalidad);
 			statement.setString(5, telefono);
-			statement.setString(6, numeroReserva);
+			statement.setInt(6, numeroReserva);
 
 			statement.executeUpdate();
 		} catch (SQLException e) {

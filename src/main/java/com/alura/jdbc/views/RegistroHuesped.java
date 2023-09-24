@@ -306,15 +306,14 @@ public class RegistroHuesped extends JFrame {
 					String nacionalidad = (String) txtNacionalidad.getSelectedItem();
 					String telefono = txtTelefono.getText();
 					
-					
-					String numeroReserva = "" + random;
+			
+					Integer numeroReserva = random;
 
 					if (nombre != null && !nombre.isEmpty() && apellido != null && !apellido.isEmpty()
 							&& fechaNac != null && nacionalidad != null && telefono != null && !telefono.isEmpty()
-							&& numeroReserva != null && !numeroReserva.isEmpty()) {
+							&& numeroReserva != null) {
 						
 	                    reservasView.setNumeroReserva(numeroReserva);	
-	                    txtNreserva.setText(numeroReserva);
 	                    
 	                    
 	                    Exito.main(null);
